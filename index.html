@@ -32,6 +32,7 @@
     background: var(--blue-tint);
     color: var(--ink);
     height:100vh;
+    height:100dvh;
     overflow:hidden;
     -webkit-font-smoothing:antialiased;
   }
@@ -39,6 +40,7 @@
     max-width:480px;
     margin:0 auto;
     height:100vh;
+    height:100dvh;
     background: var(--blue-tint);
     display:flex;
     flex-direction:column;
@@ -76,21 +78,22 @@
   }
   .stats-row{
     display:flex;
-    gap:10px;
+    gap:8px;
     margin-top:16px;
     position:relative;
     z-index:1;
   }
   .stat-pill{
     flex:1;
+    min-width:0;
     background: rgba(255,255,255,0.14);
     border-radius:12px;
-    padding:9px 10px;
+    padding:8px 4px;
     text-align:center;
     backdrop-filter: blur(2px);
   }
-  .stat-pill .num{font-size:18px; font-weight:700; line-height:1.1;}
-  .stat-pill .lbl{font-size:10.5px; opacity:0.85; margin-top:2px; font-weight:500;}
+  .stat-pill .num{font-size:16px; font-weight:700; line-height:1.1;}
+  .stat-pill .lbl{font-size:9.5px; opacity:0.85; margin-top:2px; font-weight:500; white-space:nowrap;}
 
   /* ---------- MAIN SCROLL AREA ---------- */
   main{
@@ -269,7 +272,67 @@
   .mini-row .name{font-size:14px; font-weight:600;}
   .mini-row .phone{font-size:12px; color:var(--slate-light);}
 
-  /* ---------- BOTTOM NAV ---------- */
+  /* ---------- COMPACT LIST ROW (new home screen) ---------- */
+  .clist-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--white);
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+    margin-bottom:8px;
+    border-left:4px solid var(--blue-deep);
+    cursor:pointer;
+  }
+  .clist-row.status-today{border-left-color:var(--amber);}
+  .clist-row.status-overdue{border-left-color:var(--red);}
+  .clist-row.status-done{border-left-color:var(--green);}
+  .clist-row.status-followup,.clist-row.status-followup-upcoming{border-left-color:#7B4FCC;}
+  .clist-avatar{
+    width:38px;height:38px;
+    border-radius:50%;
+    background:var(--blue-tint-2);
+    color:var(--blue-deep);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:13px;
+    flex-shrink:0;
+  }
+  .clist-body{flex:1; min-width:0;}
+  .clist-name{font-size:14.5px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .clist-sub{font-size:12px; color:var(--slate-light); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .clist-right{text-align:right; flex-shrink:0;}
+  .clist-time{font-size:13px; font-weight:700; color:var(--blue-deep);}
+  .clist-date{font-size:10.5px; color:var(--slate-light); margin-top:1px;}
+  .clist-chip{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:20px;
+    margin-top:4px;
+    letter-spacing:0.2px;
+  }
+  .clist-chip.today{background:var(--amber-tint); color:#9a6a14;}
+  .clist-chip.overdue{background:var(--red-tint); color:var(--red);}
+  .clist-chip.upcoming{background:var(--blue-tint-2); color:var(--blue-deep);}
+  .clist-chip.done{background:var(--green-tint); color:var(--green);}
+  .clist-chip.followup,.clist-chip.followup-upcoming{background:#EFE7FB; color:#7B4FCC;}
+  .clist-chevron{color:var(--slate-light); font-size:18px; flex-shrink:0;}
+
+  /* ---------- DETAIL MODAL ---------- */
+  .detail-row{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #F0F2F5;}
+  .detail-row:last-child{border-bottom:none;}
+  .detail-row .dlabel{font-size:11.5px; font-weight:700; color:var(--slate-light); text-transform:uppercase; letter-spacing:0.3px; flex:0 0 90px;}
+  .detail-row .dval{font-size:14px; color:var(--ink); flex:1;}
+  .detail-header{display:flex; align-items:center; gap:12px; margin-bottom:4px;}
+  .detail-avatar{
+    width:48px;height:48px; border-radius:50%;
+    background:var(--blue-tint-2); color:var(--blue-deep);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:17px; flex-shrink:0;
+  }
+  .btn-whatsapp{background:#DDF3E4; color:#1F8C3B;}
   nav.tabbar{
     position:absolute;
     bottom:0; left:0; right:0;
@@ -393,6 +456,7 @@
       <div class="stat-pill"><div class="num" id="statToday">0</div><div class="lbl">Today</div></div>
       <div class="stat-pill"><div class="num" id="statUpcoming">0</div><div class="lbl">Upcoming</div></div>
       <div class="stat-pill"><div class="num" id="statOverdue">0</div><div class="lbl">Overdue</div></div>
+      <div class="stat-pill"><div class="num" id="statDone">0</div><div class="lbl">Done</div></div>
       <div class="stat-pill"><div class="num" id="statClients">0</div><div class="lbl">Clients</div></div>
     </div>
   </header>
@@ -492,479 +556,44 @@
   </div>
 </div>
 
+<!-- Client Detail Modal (tap a row to open) -->
+<div class="modal-overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="detail-header">
+      <div class="detail-avatar" id="dAvatar"></div>
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--ink)" id="dName"></div>
+        <span class="badge" id="dBadge"></span>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <div class="detail-row"><div class="dlabel">Phone</div><div class="dval" id="dPhone"></div></div>
+      <div class="detail-row" id="dPropertyRow"><div class="dlabel">Property</div><div class="dval" id="dProperty"></div></div>
+      <div class="detail-row" id="dTimeRow"><div class="dlabel">Visit</div><div class="dval" id="dTime"></div></div>
+      <div class="detail-row" id="dRemarksRow"><div class="dlabel">Remarks</div><div class="dval" id="dRemarks"></div></div>
+      <div class="detail-row" id="dFollowupRow"><div class="dlabel">Follow-up</div><div class="dval" id="dFollowup"></div></div>
+    </div>
+    <div class="card-actions" style="margin-top:14px;">
+      <button class="btn-call" data-action="call" id="dCallBtn">📞 Call</button>
+      <button class="btn-whatsapp" data-action="whatsapp" id="dWhatsappBtn">💬 WhatsApp</button>
+    </div>
+    <div class="card-actions" style="margin-top:8px;">
+      <button class="btn-done" data-action="done" id="dDoneBtn">✓ Mark Done</button>
+      <button class="btn-followup" data-action="followupdone" id="dFollowupDoneBtn">✓ Followed Up</button>
+      <button class="btn-edit" data-action="edit" id="dEditBtn">✎ Edit</button>
+      <button class="btn-del" data-action="delete" id="dDelBtn">🗑</button>
+    </div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn-secondary" id="dCloseBtn" style="flex:1;">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ---------------- DATA LAYER ---------------- */
 const STORAGE_KEY = 'visitdesk_clients_v1';
 let clients = [];
 
 function loadData(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    clients = raw ? JSON.parse(raw) : seedData();
-  }catch(e){ clients = seedData(); }
-}
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
-}
-function seedData(){
-  return [];
-}
-function uid(){ return 'c_' + Date.now() + '_' + Math.floor(Math.random()*9999); }
-
-/* ---------------- STATE ---------------- */
-let currentTab = 'home';
-let editingId = null;
-
-/* ---------------- HELPERS ---------------- */
-function pad(n){ return n.toString().padStart(2,'0'); }
-function todayStr(){
-  const d = new Date();
-  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-}
-function formatDateLabel(dateStr){
-  const today = todayStr();
-  const d = new Date(dateStr+'T00:00:00');
-  const t = new Date(today+'T00:00:00');
-  const diffDays = Math.round((d-t)/86400000);
-  if(diffDays===0) return 'Today';
-  if(diffDays===1) return 'Tomorrow';
-  if(diffDays===-1) return 'Yesterday';
-  return d.toLocaleDateString('en-IN', {day:'numeric', month:'short'});
-}
-function formatTime12(timeStr){
-  if(!timeStr) return '';
-  let [h,m] = timeStr.split(':').map(Number);
-  const ampm = h>=12 ? 'PM':'AM';
-  h = h%12; if(h===0) h=12;
-  return h+':'+pad(m)+' '+ampm;
-}
-function getVisitStatus(c){
-  if(c.done && !c.followupDate) return 'done';
-  if(c.followupDate){
-    const today = todayStr();
-    if(c.followupDone) return 'done';
-    return c.followupDate <= today ? 'followup' : 'followup-upcoming';
-  }
-  const now = new Date();
-  const visitDT = new Date(c.date+'T'+c.time);
-  const today = todayStr();
-  if(c.date < today) return 'overdue';
-  if(c.date === today){
-    return visitDT < now ? 'overdue' : 'today';
-  }
-  return 'upcoming';
-}
-function initials(name){
-  return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('');
-}
-function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1800);
-}
-
-/* ---------------- RENDER ---------------- */
-function render(){
-  document.getElementById('dateLabel').textContent =
-    new Date().toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long'});
-
-  const todayCount = clients.filter(c=>!c.done && getVisitStatus(c)==='today').length;
-  const upcomingCount = clients.filter(c=>!c.done && getVisitStatus(c)==='upcoming').length;
-  const overdueCount = clients.filter(c=>!c.done && getVisitStatus(c)==='overdue').length;
-  document.getElementById('statToday').textContent = todayCount;
-  document.getElementById('statUpcoming').textContent = upcomingCount;
-  document.getElementById('statOverdue').textContent = overdueCount;
-  document.getElementById('statClients').textContent = clients.length;
-
-  const main = document.getElementById('mainContent');
-  if(currentTab==='home') main.innerHTML = renderHome();
-  else if(currentTab==='clients') main.innerHTML = renderClients();
-  else main.innerHTML = renderSettings();
-
-  attachCardEvents();
-}
-
-function renderHome(){
-  const sorted = [...clients].sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
-  const overdue = sorted.filter(c=>!c.done && getVisitStatus(c)==='overdue');
-  const today = sorted.filter(c=>!c.done && getVisitStatus(c)==='today');
-  const upcoming = sorted.filter(c=>!c.done && getVisitStatus(c)==='upcoming');
-  const followupDue = sorted.filter(c=>getVisitStatus(c)==='followup');
-  const followupUpcoming = sorted.filter(c=>getVisitStatus(c)==='followup-upcoming');
-  const done = sorted.filter(c=>c.done && !c.followupDate || (c.followupDate && c.followupDone)).slice(-5).reverse();
-
-  if(clients.length===0){
-    return `<div class="empty-state">
-      <div class="icon">🏘️</div>
-      <div class="msg">No visits scheduled yet</div>
-      <div class="sub">Tap the + button to add your first client visit</div>
-    </div>`;
-  }
-
-  let html = '';
-  if(followupDue.length){
-    html += sectionLabel('Follow-ups Due', followupDue.length);
-    html += `<div class="timeline">${followupDue.map(c=>cardHTML(c)).join('')}</div>`;
-  }
-  if(overdue.length){
-    html += sectionLabel('Overdue', overdue.length);
-    html += `<div class="timeline">${overdue.map(c=>cardHTML(c)).join('')}</div>`;
-  }
-  if(today.length){
-    html += sectionLabel("Today's Visits", today.length);
-    html += `<div class="timeline">${today.map(c=>cardHTML(c)).join('')}</div>`;
-  }
-  if(upcoming.length){
-    html += sectionLabel('Upcoming', upcoming.length);
-    html += `<div class="timeline">${upcoming.map(c=>cardHTML(c)).join('')}</div>`;
-  }
-  if(followupUpcoming.length){
-    html += sectionLabel('Follow-ups Scheduled', followupUpcoming.length);
-    html += `<div class="timeline">${followupUpcoming.map(c=>cardHTML(c)).join('')}</div>`;
-  }
-  if(done.length){
-    html += sectionLabel('Recently Completed', done.length);
-    html += `<div class="timeline">${done.map(c=>cardHTML(c)).join('')}</div>`;
-  }
-  if(!overdue.length && !today.length && !upcoming.length && !done.length && !followupDue.length && !followupUpcoming.length){
-    html = `<div class="empty-state"><div class="icon">✅</div><div class="msg">All caught up</div><div class="sub">No pending visits right now</div></div>`;
-  }
-  return html;
-}
-
-function sectionLabel(text,count){
-  return `<div class="section-label">${text}<span class="count">${count}</span></div>`;
-}
-
-function cardHTML(c){
-  const status = getVisitStatus(c);
-  const isFollowup = status==='followup' || status==='followup-upcoming';
-  const badgeText = status==='overdue'?'Overdue':status==='today'?'Today':status==='done'?'Completed'
-    : status==='followup'?'Follow-up Due':status==='followup-upcoming'?'Follow-up Scheduled':'Upcoming';
-  const badgeClass = isFollowup ? 'followup' : status;
-  const cardStatusClass = isFollowup ? 'followup' : status;
-
-  let timeBlock;
-  if(isFollowup){
-    timeBlock = `<div class="time">${formatDateLabel(c.followupDate)}</div><div class="date">Follow-up</div>`;
-  } else {
-    timeBlock = `<div class="time">${formatTime12(c.time)}</div><div class="date">${formatDateLabel(c.date)}</div>`;
-  }
-
-  return `
-  <div class="t-item status-${cardStatusClass}">
-    <div class="t-dot"></div>
-    <div class="card status-${cardStatusClass}" data-id="${c.id}">
-      <div class="card-top">
-        <div>
-          <div class="client-name">${escapeHTML(c.name)}</div>
-          <div class="client-phone">📞 ${escapeHTML(c.phone)}</div>
-          ${c.property ? `<div class="client-phone">📍 ${escapeHTML(c.property)}</div>` : ''}
-        </div>
-        <div class="visit-time">${timeBlock}</div>
-      </div>
-      <span class="badge ${badgeClass}">${badgeText}</span>
-      ${c.remarks ? `<div class="remarks">${escapeHTML(c.remarks)}</div>` : ''}
-      ${isFollowup && c.followupNote ? `<div class="remarks">🔁 ${escapeHTML(c.followupNote)}</div>` : ''}
-      <div class="card-actions">
-        <button class="btn-call" data-action="call" data-id="${c.id}">📞 Call</button>
-        ${isFollowup ? `<button class="btn-followup" data-action="followupdone" data-id="${c.id}">✓ Followed Up</button>`
-          : !c.done ? `<button class="btn-done" data-action="done" data-id="${c.id}">✓ Mark Done</button>` : ''}
-        <button class="btn-edit" data-action="edit" data-id="${c.id}">✎ Edit</button>
-        <button class="btn-del" data-action="delete" data-id="${c.id}">🗑</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function renderClients(){
-  if(clients.length===0){
-    return `<div class="empty-state"><div class="icon">👥</div><div class="msg">No clients yet</div><div class="sub">Add a client to get started</div></div>`;
-  }
-  // unique clients by phone, show their latest visit
-  const byPhone = {};
-  clients.forEach(c=>{
-    if(!byPhone[c.phone] || (c.date+c.time) > (byPhone[c.phone].date+byPhone[c.phone].time)){
-      byPhone[c.phone] = c;
-    }
-  });
-  const list = Object.values(byPhone).sort((a,b)=>a.name.localeCompare(b.name));
-  return sectionLabel('All Clients', list.length) +
-    list.map(c=>`
-      <div class="mini-row" data-action="edit" data-id="${c.id}">
-        <div class="left">
-          <div class="avatar">${initials(c.name)}</div>
-          <div>
-            <div class="name">${escapeHTML(c.name)}</div>
-            <div class="phone">${escapeHTML(c.phone)}</div>
-          </div>
-        </div>
-        <div style="font-size:18px;color:var(--slate-light)">›</div>
-      </div>
-    `).join('');
-}
-
-function renderSettings(){
-  return `
-    <div class="section-label">Data</div>
-    <div class="mini-row" id="exportBtn" style="cursor:pointer">
-      <div class="left"><div class="avatar">⬇️</div><div><div class="name">Export backup</div><div class="phone">Save all data as a file</div></div></div>
-    </div>
-    <div class="mini-row" id="importBtn" style="cursor:pointer">
-      <div class="left"><div class="avatar">⬆️</div><div><div class="name">Import backup</div><div class="phone">Restore from a file</div></div></div>
-    </div>
-    <input type="file" id="importFile" accept=".json" style="display:none">
-    <div class="section-label">About</div>
-    <div class="mini-row">
-      <div class="left"><div class="avatar">ℹ️</div><div><div class="name">VisitDesk v1.0</div><div class="phone">Your data stays on this device only</div></div></div>
-    </div>
-    <div class="mini-row" id="clearBtn" style="cursor:pointer">
-      <div class="left"><div class="avatar" style="background:var(--red-tint);color:var(--red)">⚠️</div><div><div class="name" style="color:var(--red)">Clear all data</div><div class="phone">This cannot be undone</div></div></div>
-    </div>
-  `;
-}
-
-function escapeHTML(str){
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-/* ---------------- EVENTS ---------------- */
-function attachCardEvents(){
-  document.querySelectorAll('[data-action]').forEach(el=>{
-    el.addEventListener('click', (e)=>{
-      const action = el.getAttribute('data-action');
-      const id = el.getAttribute('data-id');
-      if(action==='call') makeCall(id);
-      else if(action==='done') markDone(id);
-      else if(action==='followupdone') markFollowupDone(id);
-      else if(action==='edit') openEdit(id);
-      else if(action==='delete') deleteClient(id);
-    });
-  });
-  const exportBtn = document.getElementById('exportBtn');
-  if(exportBtn) exportBtn.addEventListener('click', exportData);
-  const importBtn = document.getElementById('importBtn');
-  if(importBtn) importBtn.addEventListener('click', ()=>document.getElementById('importFile').click());
-  const importFile = document.getElementById('importFile');
-  if(importFile) importFile.addEventListener('change', importData);
-  const clearBtn = document.getElementById('clearBtn');
-  if(clearBtn) clearBtn.addEventListener('click', clearAllData);
-}
-
-function makeCall(id){
-  const c = clients.find(x=>x.id===id);
-  if(c) window.location.href = 'tel:'+c.phone;
-}
-let pendingDoneId = null;
-
-function markDone(id){
-  const c = clients.find(x=>x.id===id);
-  if(!c) return;
-  c.done = true;
-  saveData();
-  pendingDoneId = id;
-  document.getElementById('followupName').textContent = c.name;
-  document.getElementById('fuQuick').value = '3';
-  document.getElementById('fuCustomDateField').style.display = 'none';
-  document.getElementById('fuCustomDate').value = '';
-  document.getElementById('fuNote').value = '';
-  document.getElementById('followupOverlay').classList.add('open');
-}
-function markFollowupDone(id){
-  const c = clients.find(x=>x.id===id);
-  if(c){ c.followupDone = true; saveData(); render(); showToast('Follow-up completed ✓'); }
-}
-function closeFollowupModal(){
-  document.getElementById('followupOverlay').classList.remove('open');
-  pendingDoneId = null;
-  render();
-}
-function addDays(dateStr, n){
-  const d = new Date(dateStr+'T00:00:00');
-  d.setDate(d.getDate()+n);
-  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-}
-function saveFollowup(){
-  const c = clients.find(x=>x.id===pendingDoneId);
-  if(!c){ closeFollowupModal(); return; }
-  const quick = document.getElementById('fuQuick').value;
-  const note = document.getElementById('fuNote').value.trim();
-  if(quick==='none'){
-    showToast('Visit completed ✓');
-    closeFollowupModal();
-    return;
-  }
-  let fuDate;
-  if(quick==='custom'){
-    fuDate = document.getElementById('fuCustomDate').value;
-    if(!fuDate){ showToast('Pick a follow-up date'); return; }
-  } else {
-    fuDate = addDays(todayStr(), parseInt(quick,10));
-  }
-  c.followupDate = fuDate;
-  c.followupNote = note;
-  c.followupDone = false;
-  saveData();
-  showToast('Follow-up scheduled ✓');
-  closeFollowupModal();
-}
-function deleteClient(id){
-  if(!confirm('Delete this visit record? This cannot be undone.')) return;
-  clients = clients.filter(x=>x.id!==id);
-  saveData(); render(); showToast('Deleted');
-}
-function openEdit(id){
-  const c = clients.find(x=>x.id===id);
-  if(!c) return;
-  editingId = id;
-  document.getElementById('modalTitle').textContent = 'Edit Client & Visit';
-  document.getElementById('fName').value = c.name;
-  document.getElementById('fPhone').value = c.phone;
-  document.getElementById('fDate').value = c.date;
-  document.getElementById('fTime').value = c.time;
-  document.getElementById('fProperty').value = c.property||'';
-  document.getElementById('fRemarks').value = c.remarks||'';
-  document.getElementById('fAlarm').value = c.alarmMins ?? 30;
-  openModal();
-}
-function openModal(){
-  document.getElementById('modalOverlay').classList.add('open');
-}
-function closeModal(){
-  document.getElementById('modalOverlay').classList.remove('open');
-  editingId = null;
-  ['fName','fPhone','fDate','fTime','fProperty','fRemarks'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fAlarm').value = '30';
-  document.getElementById('modalTitle').textContent = 'New Client & Visit';
-}
-
-function saveVisit(){
-  const name = document.getElementById('fName').value.trim();
-  const phone = document.getElementById('fPhone').value.trim();
-  const date = document.getElementById('fDate').value;
-  const time = document.getElementById('fTime').value;
-  const property = document.getElementById('fProperty').value.trim();
-  const remarks = document.getElementById('fRemarks').value.trim();
-  const alarmMins = parseInt(document.getElementById('fAlarm').value,10);
-
-  if(!name || !phone || !date || !time){
-    showToast('Please fill name, phone, date & time');
-    return;
-  }
-
-  if(editingId){
-    const c = clients.find(x=>x.id===editingId);
-    Object.assign(c, {name, phone, date, time, property, remarks, alarmMins});
-  } else {
-    clients.push({
-      id: uid(), name, phone, date, time, property, remarks, alarmMins, done:false
-    });
-  }
-  saveData();
-  scheduleNotification({name, phone, date, time, property, remarks, alarmMins});
-  closeModal();
-  render();
-  showToast(editingId ? 'Visit updated' : 'Visit saved ✓');
-}
-
-/* ---------------- NOTIFICATIONS / ALARM ---------------- */
-function requestNotifPermission(){
-  if('Notification' in window && Notification.permission==='default'){
-    Notification.requestPermission();
-  }
-}
-function scheduleNotification(visit){
-  if(!('Notification' in window) || Notification.permission!=='granted') return;
-  const visitDT = new Date(visit.date+'T'+visit.time);
-  const fireAt = new Date(visitDT.getTime() - (visit.alarmMins||0)*60000);
-  const msUntil = fireAt.getTime() - Date.now();
-  if(msUntil <= 0 || msUntil > 24*60*60*1000) return; // only schedule within next 24h while app is open
-  setTimeout(()=>{
-    new Notification('Upcoming Visit: '+visit.name, {
-      body: (visit.property?visit.property+' · ':'')+formatTime12(visit.time)+(visit.remarks?' — '+visit.remarks:''),
-      tag: visit.name+visit.date+visit.time
-    });
-  }, msUntil);
-}
-function rescheduleAllNotifications(){
-  clients.filter(c=>!c.done).forEach(c=>scheduleNotification(c));
-}
-
-/* ---------------- BACKUP ---------------- */
-function exportData(){
-  const blob = new Blob([JSON.stringify(clients,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'visitdesk-backup-'+todayStr()+'.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  showToast('Backup downloaded');
-}
-function importData(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    try{
-      const data = JSON.parse(ev.target.result);
-      if(Array.isArray(data)){
-        clients = data;
-        saveData();
-        render();
-        showToast('Backup restored ✓');
-      }
-    }catch(err){ showToast('Invalid backup file'); }
-  };
-  reader.readAsText(file);
-}
-function clearAllData(){
-  if(!confirm('This will permanently delete ALL client and visit data. Continue?')) return;
-  if(!confirm('Are you absolutely sure? This cannot be undone.')) return;
-  clients = [];
-  saveData();
-  render();
-  showToast('All data cleared');
-}
-
-/* ---------------- INIT ---------------- */
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    currentTab = tab.getAttribute('data-tab');
-    render();
-  });
-});
-document.getElementById('fabAdd').addEventListener('click', ()=>{
-  editingId = null;
-  document.getElementById('fDate').value = todayStr();
-  openModal();
-});
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
-document.getElementById('saveBtn').addEventListener('click', saveVisit);
-document.getElementById('modalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id==='modalOverlay') closeModal();
-});
-document.getElementById('fuQuick').addEventListener('change', (e)=>{
-  document.getElementById('fuCustomDateField').style.display = e.target.value==='custom' ? 'block' : 'none';
-});
-document.getElementById('fuSkipBtn').addEventListener('click', closeFollowupModal);
-document.getElementById('fuSaveBtn').addEventListener('click', saveFollowup);
-document.getElementById('followupOverlay').addEventListener('click', (e)=>{
-  if(e.target.id==='followupOverlay') closeFollowupModal();
-});
-
-loadData();
-render();
-requestNotifPermission();
-rescheduleAllNotifications();
-// re-render every 60s to keep statuses (today/overdue) fresh
-setInterval(render, 60000);
-</script>
-</body>
-</html>
+  tr
